@@ -1,0 +1,9 @@
+<!-- <td>
+      <input 
+        type="text" 
+        name="note_{{ student.id_student }}" 
+        data-student-id="{{ student.id_student }}"
+        value="{{ student.note|default('') }}"
+        class="note-input"
+      />
+    </td> -->

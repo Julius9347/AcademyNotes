@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/adminStyle.css') }}">
+    <title>Admin app</title>
+</head>
+<body>
+    <div id="barMenu" class="container">
+    <a href="#container-users" class="link-menu">Users</a>
+    <a href="#container-teacher" class="link-menu">Profesores</a>
+    <a href="#container-students" class="link-menu">Estudiantes</a>
+    <a href="#container-grades" class="link-menu">Grados</a>
+    <a href="#container-asignatures" class="link-menu">Asignaturas</a>
+    </div>
+
+    <div class="container" id="container-users">
+        <h2>Administrar Usuarios</h2>
+        <div id="container-list-users" class="container-list">
+        <h5 class="sub-title">Usuarios existentes</h5>
+            <ol for="" id="users-list">Cargando...</ol>
+            <p for="" id="btn-show-more-users" class="btn-show-more" data-hide="false">Ver a todas los Usuarios...</p>
+            <p id="users-count"></p>
+        </div>
+        <div class="buttons-modal">        
+            <button class="button" id="button-add-user">Registrar usuario</button>
+        </div>        
+        <div id="modal-user" class="modal">
+            <div class="backdrop">
+                <div class="content">
+                    <div class="header">
+                        <h2>Registrar un nuevo usuario</h2>
+                    </div>
+                    <div class="body"><form action="" id="form-user-register">
+                            <div>
+                                <label for="new-user" id="add-name-user" class="name-label show">Nombre del nuevo usuario</label>
+                                <input id="input-user-name" name="user" type="text" autocomplete="user" required autofocus/>
+                            </div>  
+                            <div>
+                                <label for="new-user" id="add-name-user" class="name-label show">Contraseña del nuevo usuario</label>
+                                <input id="input-user-password" name="user" type="text" autocomplete="user" required autofocus/>
+                            </div>
+                            <div>
+                                <label for="new-user" id="add-name-user" class="name-label show">Rol del nuevo usuario</label>
+                                <select name="" id="select-user-role" class="listSelect">
+                                    <option value="default">Seleccione un rol</option>
+                                    <option value="admin">Admin</option>
+                                    <option value="teacher">Profesor</option>
+                                    <option value="student">Estudiante</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="new-user" id="add-name-user" class="name-label show">Institución del nuevo usuario</label>
+                                <input id="input-user-institution" name="user" type="text" autocomplete="user" required autofocus/>
+                            </div>                          
+                        </form>
+                        <div id="list-asignature-user" class="div-user">
+                            <label for="" id="name-label-asignature" class="name-label"></label>
+                            <ol id="list-asignature-user" class="list">
+                            </ol>
+                        </div>
+                        <div id="list-grade-user" class="div-user">
+                            <label for="" id="name-label-grade" class="name-label"></label>
+                            <ol id="list-grade-user" class="list">
+                            </ol>
+                        </div>
+                        <div class="buttons-modal">
+                                <button id="save-user" class="button-modal">Guardar usuario</button>
+                                <button class="button-modal" id="close-modal-user">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <div class="container" id="container-teacher">
+        <h2>Administrar Profesores</h2>
+        <div id="container-list-teacher" class="container-list">
+        <h5 class="sub-title">Profesores existentes</h5>
+            <ol for="" id="teachers">Cargando...</ol>
+            <p for="" id="btn-show-more-teachers" class="btn-show-more" data-hide="false">Ver a todas los profesores...</p>
+            <p id="teachers-count"></p>
+        </div>
+        <!-- <p>Asignar materias</p>
+        <p>Asignar grados</p>
+        <p>registrar Profesores</p> -->
+    </div>
+
+    <div class="container" id="container-students">
+        <h2>Administrar Estudiantes</h2>
+        <div id="container-list-students" class="container-list">
+        <h5 class="sub-title">Estudiantes existentes</h5>
+            <ol for="" id="students-list">Cargando...</ol>
+            <p for="" id="btn-show-more-student" class="btn-show-more" data-hide="false">Ver a todas los estudiantes...</p>
+            <p id="students-count"></p>
+        </div>
+        <!-- <p>Gestionar estudiantes</p>
+        <p>Asignar grado</p>
+        <p>registrar Estudiantes</p> -->
+    </div>
+
+    <div class="container" id="container-grades">
+        <h2>Administrar Grados</h2>
+        <div id="container-list-grade" class="container-list">
+        <h5 class="sub-title">Grados existentes</h5>
+            <ol for="" id="grades-list">Cargando...</ol>
+            <p for="" id="btn-show-more-grades" class="btn-show-more" data-hide="false">Ver a todas los grados...</p>
+            <p id="grades-count"></p>
+        </div>
+        <div class="buttons-modal">        
+            <button class="button" id="button-add-grade">Registrar grado</button>
+        </div>        
+        <div id="modal-grade" class="modal">
+            <div class="backdrop">
+                <div class="content">
+                    <div class="header">
+                        <h2>Registrar un nueva grado</h2>
+                    </div>
+                    <div class="body"><form action="" id="form-grade-register">
+                            <div>
+                                <label for="new-grade" id="add-name-grade" class="name-label show">Nombre del nuevo grado</label>
+                                <input id="input-grade" name="grade" type="text" autocomplete="grade" required autofocus/>
+                            </div>                            
+                        </form>
+                        <div id="list-undergraduatestudent-grade">
+                            <label for="" id="name-label-students" class="name-label">Estudiantes sin grado</label>
+                            <ol id="list-students" class="list">
+                            </ol>
+                        </div>
+                        <div id="list-teacher-grade">
+                            <label for="" id="name-label-teacher" class="name-label"></label>
+                            <ol id="list-asignature-teacher" class="list">
+                            </ol>
+                        </div>
+                        <div class="buttons-modal">
+                                <button id="save-grade" class="button-modal">Guardar grado</button>
+                                <button class="button-modal" id="close-modal-grade">Cerrar</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" id="container-asignatures" class="container">
+        <h2>Administrar Asignaturas</h2>
+        <div id="container-list-asignatures" class="container-list">
+        <h5 class="sub-title">Asignaturas existentes</h5>
+            <ol for="" id="list-asignatures">Cargando...</ol>
+            <p for="" id="btn-show-more-asignature" class="btn-show-more" data-hide="false">Ver todas las asignaturas...</p>
+            <p id="asignature-count"></p>
+        </div>
+        <div class="buttons-modal">        
+            <button class="button" id="button-add-asignature">Registrar asignatura</button>
+        </div>
+        <div id="modal-asignature" class="modal">
+            <div class="backdrop">
+                <div class="content">
+                    <div class="header">
+                        <h2>Registrar una nueva asignatura</h2>
+                    </div>
+                    <div class="body"><form action="" id="form-asignature-register">
+                            <div>
+                                <label for="new-asignature" id="add-name-asignature"  class="name-label show">Nombre de la asignatura</label>
+                                <input id="input-asignature" name="asignature" type="text" autocomplete="asignature" required autofocus/>
+                            </div>                            
+                        </form>
+                        <div id="teacher-asignatures">
+                            <ol id="list-teacher-asignature" class="list">
+                            </ol>
+                            <div class="buttons-modal">
+                                <button id="save-asignature" class="button-modal">Guardar asignatura</button>
+                                <button class="button-modal" id="close-modal-asignature">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</html>

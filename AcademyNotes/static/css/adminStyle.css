@@ -1,0 +1,310 @@
+:root {
+    --bg: #f5f7fb;
+    --card: #ffffff;
+    --accent: #2563eb;
+    --whiteAccent: #3170fa;
+    --muted: #6b7280;
+    --simple: #e6e6e6;
+    --constranst: rgb(246, 246, 246);
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+}
+/* morado alaska amarillo toby */
+body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.container {
+    width: 80%;
+    margin: 15px auto;
+    padding: 1px 10px;
+    background-color: var(--card);
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, .08);
+}
+
+#barMenu {
+    position: static;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--card);
+    padding: 10px;
+    border-radius: 10px;
+}
+
+.link-menu {
+    margin: 5px;
+    text-decoration: none;
+    color: black;
+    transition: color 400ms ease;
+}
+
+.link-menu:hover {
+    color: var(--accent);
+}
+
+.container-list {
+    border-bottom: 1px solid var(--muted);
+    border-left: 1px solid var(--muted);
+    padding: 5px;
+    margin: 10px;
+    font-size: 18px;
+}
+
+.li {
+    margin: 5px 0;
+    padding-left: 10px;
+    padding-right: auto;
+    list-style: none;
+    transition-property: transform background-color;
+    transition: 500ms ease;
+}
+
+.li:hover {
+    background-color: var(--accent);
+    color: white;
+    cursor: pointer;
+    transform: translateX(10px);
+}
+
+li[data-list-class="student-item"].hide,
+li[data-list-class="teacher-item"].hide,
+li[data-list-class="grade-item"].hide,
+li[data-list-class="asignature-item"].hide,
+li[data-list-class="user-item"].hide,
+.div-sub-sub-item.hide {
+    display: none;
+}
+
+.label-sub-item {
+    margin: 5px 0;
+    padding: 0 10px 0 10px;
+    list-style: none;
+    transition-property: transform background-color;
+    transition: 500ms ease;
+}
+
+.label-sub-item:hover {
+    background-color: var(--simple);
+    cursor: pointer;
+}
+
+.btn-show-more {
+    margin: 5px 0;
+    padding: 5px;
+    border-radius: 8px;
+    transition-property: transform background-color;
+    transition: 500ms ease;
+}
+
+.btn-show-more:hover {
+    background-color: var(--simple);
+    cursor: pointer;
+    transform: translateX(10px);
+}
+
+#btn-show-more-teachers.hide,
+#btn-show-more-asignature.hide,
+#btn-show-more-grades.hide,
+#btn-show-more-student.hide,
+#name-label-students:not(.show),
+.label-sub-item.hide  {
+    display: none;
+}
+
+.label-sub-item.selected,
+.li.selected {
+    background-color: var(--accent);
+    color: #fff;
+    cursor: pointer;
+}
+
+.button {
+    display: inline-block;
+    width: 50%;
+    margin: 0 0 0 25%;
+    padding: 10px 12px;
+    background-color: var(--accent);
+    color: #fff;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.button:active,
+.label-sub-item:active,
+.li:active,
+.button-modal:active {
+    background-color: var(--whiteAccent);
+}
+
+.btn-show-more:active {
+    background-color: var(--constranst);
+}
+
+.backdrop {
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, .05);
+    position: fixed;
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+
+.content {
+    position: fixed;
+    overflow-y: auto;
+    z-index: 1.5;
+    background-color: var(--card);
+    width: 90vw;
+    height: 80vh;
+    left: 5vw;
+    top: 10vh;
+    display: flex;
+    flex-direction: column;
+
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(16, 24, 40, .08);
+}
+
+.header {
+    /* flex-shrink: 1; */
+    display: grid;
+    grid-template-columns: 1fr 50;
+    padding: 1rem;
+    /* border-bottom: 1px solid #e6e9ef; */
+}
+
+.header>button {
+    align-self: center;
+    width: 50px;
+    height: 50px;
+    padding: 0;
+}
+
+.modal:not(.revelar) {
+    display: none;
+}
+
+.modal.revelar {
+    display: block;
+}
+
+div[data-class='div-list']:not(.revelar) {
+    display: none;
+}
+
+
+div[data-class='div-list'] {
+    display: block;
+    align-items: center;
+}
+
+input[type="text"] {
+    width: 50%;
+    padding: 10px 12px;
+    border: 1px solid #e6e9ef;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 14px;
+    display: inline-block;
+    margin: 0 0 0 25%;
+    text-align: center;
+}
+
+.name-label {
+    display: block;
+    margin: 0 0 0 10%;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 6px;
+}
+
+.name-label:not(.show) {
+    display: none;
+}
+
+.body {
+    flex: 1;
+    padding: 1rem;
+    min-height: 0;
+}
+
+.buttons-modal {
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: row;
+    padding: 1rem;
+    border-top: 1px solid #e6e9ef; 
+}
+
+.button-modal {
+    display: inline-block;
+    width: 50%;
+    margin: 0 5% 0 5%;
+    padding: 13px 15px;
+    background-color: var(--accent);
+    color: #fff;
+    text-align: center;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    border-top: 1px solid #e6e9ef; 
+
+}
+
+.listSelect {
+    display: inline-block;
+    padding: 10px 12px;
+    background-color: var(--accent);
+    color: #fff;
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+
+    width: 50%;
+    border: none;
+    box-sizing: border-box;
+    font-size: 14px;
+    margin: 0 0 0 25%;
+}
+
+/* 1. Ancho de la barra completa */
+.content::-webkit-scrollbar {
+  width: 12px; /* Vertical */
+  height: 12px; /* Horizontal */
+}
+
+/* 2. Fondo de la barra (track) */
+.content::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+/* 3. La pieza móvil (thumb) */
+.content::-webkit-scrollbar-thumb {
+  background-color: var(--simple);
+  border-radius: 10px;
+  border: 3px solid #f1f1f1; /* Efecto de espacio */
+}
+
+/* 4. Color al pasar el ratón (hover) */
+.content::-webkit-scrollbar-thumb:hover {
+    background-color: var(--card);
+}
+
+/* regla para Firefox */
+.content { 
+    scrollbar-width: thin; 
+    scrollbar-color: var(--simple) var(--card); 
+}
