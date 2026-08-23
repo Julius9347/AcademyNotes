@@ -41,12 +41,27 @@ jobs:
     concurrency:
       group: fly-deploy
       cancel-in-progress: true
+    env:
+      FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
+      # Mientras no exista el secreto FLY_API_TOKEN el despliegue se omite en
+      # lugar de fallar: un build en rojo por configuracion pendiente solo
+      # genera ruido en un repositorio que se va a mostrar.
+      - name: Comprobar configuracion de Fly
+        id: config
+        run: |
+          if [ -z "$FLY_API_TOKEN" ]; then
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::FLY_API_TOKEN no esta configurado. Se omite el despliegue (ver README, seccion Despliegue)."
+          else
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: superfly/flyctl-actions/setup-flyctl@master
+        if: steps.config.outputs.listo == 'true'
 
       - name: Desplegar
+        if: steps.config.outputs.listo == 'true'
         run: flyctl deploy --remote-only
-        env:
-          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
