@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+{% block title %}{{ assignment.subject_name }} {{ assignment.group_name }} - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>{{ assignment.subject_name }} &middot; {{ assignment.group_name }}</h1>
+    <p class="muted">
+      <a href="{{ url_for('teacher.dashboard') }}">Mis cursos</a> /
+      Cuaderno de notas
+      {% if period %}&middot; {{ period.name }}{% endif %}
+    </p>
+  </div>
+
+  <div class="row">
+    {% if periods %}
+    <form method="get" class="row">
+      <select name="periodo" onchange="this.form.submit()">
+        {% for p in periods %}
+          <option value="{{ p.id }}" {% if period and p.id == period.id %}selected{% endif %}>
+            {{ p.name }}
+          </option>
+        {% endfor %}
+      </select>
+      <noscript><button class="btn btn--sm" type="submit">Ver</button></noscript>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if not period %}
+  <div class="card empty">
+    <h2>No hay periodos definidos</h2>
+    <p class="muted">El administrador debe crear los periodos del ano lectivo.</p>
+  </div>
+{% else %}
+
+<div id="contexto" hidden
+     data-assignment="{{ assignment.id }}"
+     data-period="{{ period.id }}"></div>
+
+<div class="card">
+  <div class="card__head">
+    <div>
+      <h2>Actividades del periodo</h2>
+      <p class="muted small">
+        Ponderacion total registrada: <strong id="total-weight">{{ book.total_weight }}%</strong>
+        &middot; {{ book.students|length }} estudiantes
+        {% if book.draft_count %}
+          &middot; <span class="badge badge--warn">{{ book.draft_count }} calificaciones en borrador</span>
+        {% endif %}
+      </p>
+    </div>
+    <div class="row">
+      <button class="btn btn--primary btn--sm" id="btn-nueva-actividad">Nueva actividad</button>
+      <button class="btn btn--sm" id="btn-importar">Importar Excel</button>
+      <a class="btn btn--sm" href="{{ export_url }}">Exportar Excel</a>
+      <button class="btn btn--accent btn--sm" id="btn-publicar">Revisar y publicar</button>
+    </div>
+  </div>
+
+  {% if book.draft_count %}
+  <div class="hint">
+    Las notas se guardan en <strong>borrador</strong>: el estudiante y la familia
+    no las ven hasta que uses <em>Revisar y publicar</em>.
+  </div>
+  {% endif %}
+
+  {% if not activities %}
+    <div class="empty">
+      <h3>Este periodo aun no tiene actividades</h3>
+      <p class="muted">Crea la primera actividad para empezar a registrar notas.</p>
+    </div>
+  {% else %}
+  <div class="gradebook">
+    <table id="gradebook"
+           data-assignment="{{ assignment.id }}"
+           data-period="{{ period.id }}">
+      <thead>
+        <tr>
+          <th class="col-student">Estudiante</th>
+          {% for act in activities %}
+          <th class="act-head" data-activity="{{ act.id }}">
+            <b>{{ act.name }}</b>
+            <span class="muted small">{{ act.kind }} &middot; {{ act.weight }}%</span><br>
+            <button class="btn btn--ghost btn--sm js-editar-actividad"
+                    data-activity="{{ act.id }}"
+                    data-name="{{ act.name }}"
+                    data-kind="{{ act.kind }}"
+                    data-weight="{{ act.weight }}"
+                    data-due="{{ act.due_date or '' }}"
+                    data-recovery="{{ 1 if act.allows_recovery else 0 }}">Editar</button>
+          </th>
+          {% endfor %}
+          <th class="col-avg">Promedio</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in book.students %}
+        <tr data-student="{{ row.student_id }}">
+          <td class="col-student">
+            <strong>{{ row.full_name }}</strong><br>
+            <span class="muted small">{{ row.student_code }}</span>
+          </td>
+          {% for cell in row.cells %}
+          <td class="cell">
+            <input class="cell-input {% if cell.status != 'borrador' %}is-published{% endif %}"
+                   type="text" inputmode="decimal"
+                   value="{{ '' if cell.score is none else cell.score }}"
+                   data-activity="{{ cell.activity_id }}"
+                   data-student="{{ row.student_id }}"
+                   aria-label="Nota de {{ row.full_name }}">
+            <button class="btn btn--ghost btn--sm js-detalle"
+                    data-activity="{{ cell.activity_id }}"
+                    data-student="{{ row.student_id }}"
+                    data-student-name="{{ row.full_name }}"
+                    data-category="{{ cell.feedback_category or '' }}"
+                    data-text="{{ cell.feedback_text or '' }}"
+                    data-missing="{{ 1 if cell.is_missing else 0 }}"
+                    data-recovery="{{ cell.recovery_status }}"
+                    title="Retroalimentacion">&#9998;</button>
+            <span class="cell__note">
+              {% if cell.is_missing %}no entrego{% elif cell.recovery_status != 'ninguna' %}rec: {{ cell.recovery_status }}{% endif %}
+            </span>
+          </td>
+          {% endfor %}
+          <td class="col-avg js-avg" data-student="{{ row.student_id }}">
+            {{ '-' if row.average is none else row.average }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endif %}
+
+<!-- ------------------------------------------------ modal actividad --- -->
+<div class="modal" id="modal-actividad">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2 id="modal-actividad-titulo">Nueva actividad</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <form class="form" id="form-actividad">
+        <input type="hidden" name="activity_id">
+        <label class="field"><span>Nombre</span>
+          <input type="text" name="name" required placeholder="Parcial de ecuaciones"></label>
+        <div class="grid grid--3">
+          <label class="field"><span>Tipo</span>
+            <select name="kind">
+              {% for k in kinds %}<option value="{{ k }}">{{ k }}</option>{% endfor %}
+            </select></label>
+          <label class="field"><span>Ponderacion (%)</span>
+            <input type="number" name="weight" min="1" max="100" step="1" value="20"></label>
+          <label class="field"><span>Fecha</span>
+            <input type="date" name="due_date"></label>
+        </div>
+        <label class="inline">
+          <input type="checkbox" name="allows_recovery"> Permite recuperacion
+        </label>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn btn--danger" id="btn-eliminar-actividad" style="display:none">Eliminar</button>
+      <span class="spacer"></span>
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btn-guardar-actividad">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- --------------------------------------------- modal retroalimentacion --- -->
+<div class="modal" id="modal-detalle">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2 id="modal-detalle-titulo">Retroalimentacion</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <form class="form" id="form-detalle">
+        <input type="hidden" name="activity_id"><input type="hidden" name="student_id">
+        <label class="field"><span>Categoria rapida</span>
+          <select name="feedback_category">
+            <option value="">Sin categoria</option>
+            {% for c in categories %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+          </select></label>
+
+        <label class="field"><span>Comentario</span>
+          <textarea name="feedback_text" placeholder="Opcional"></textarea></label>
+
+        {% if templates %}
+        <label class="field"><span>Usar un comentario guardado</span>
+          <select id="plantillas">
+            <option value="">Seleccionar...</option>
+            {% for t in templates %}<option value="{{ t.text }}">{{ t.text[:60] }}...</option>{% endfor %}
+          </select></label>
+        {% endif %}
+
+        <div class="row">
+          <button type="button" class="btn btn--sm" id="btn-sugerencia">Generar sugerencia</button>
+          <span class="muted small">Asistente: propone un texto; tu decides. Nunca cambia la nota.</span>
+        </div>
+
+        <div class="grid grid--2">
+          <label class="inline"><input type="checkbox" name="is_missing"> No entrego</label>
+          <label class="field"><span>Recuperacion</span>
+            <select name="recovery_status">
+              <option value="ninguna">Ninguna</option>
+              <option value="disponible">Disponible</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="realizada">Realizada</option>
+            </select></label>
+        </div>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btn-guardar-detalle">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ------------------------------------------------- modal importacion --- -->
+<div class="modal" id="modal-importar">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2>Importar notas desde Excel</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="hint">
+        Sube el archivo exportado por AcademyNotes. Nada se guarda hasta que
+        revises la previsualizacion y confirmes.
+      </div>
+      <input type="file" id="archivo-excel" accept=".xlsx,.xlsm">
+      <div id="preview-importacion"></div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btn-previsualizar">Analizar archivo</button>
+      <button class="btn btn--accent" id="btn-confirmar-importacion" style="display:none">
+        Confirmar e importar
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- -------------------------------------------------- modal publicacion --- -->
+<div class="modal" id="modal-publicar">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2>Revisar y publicar</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <p>
+        Se publicaran todas las calificaciones en <strong>borrador</strong> de
+        {{ assignment.subject_name }} - {{ assignment.group_name }}
+        {% if period %}({{ period.name }}){% endif %}.
+      </p>
+      <p class="muted small">
+        A partir de ese momento el estudiante y su familia podran verlas dentro
+        del preinforme del periodo. Podras seguir corrigiendolas: cada cambio
+        queda en el historial.
+      </p>
+      <div id="resultado-publicacion"></div>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--accent" id="btn-confirmar-publicacion">Publicar</button>
+    </div>
+  </div>
+</div>
+
+<div class="savebar" id="savebar"><span id="savebar-text">Guardando...</span></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/gradebook.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Estructura academica - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Estructura academica</h1>
+    <p class="muted">
+      Anos, periodos, grupos y asignaturas. Un ano puede tener 3 o 4 periodos:
+      la cantidad no esta fijada en el sistema.
+    </p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <div class="card__head">
+      <h2>Periodos {% if year %}de {{ year.name }}{% endif %}</h2>
+    </div>
+    <table class="table table--compact">
+      <thead><tr><th>#</th><th>Nombre</th><th>Inicio</th><th>Fin</th><th></th></tr></thead>
+      <tbody>
+        {% for p in periods %}
+        <tr>
+          <td>{{ p.sequence }}</td>
+          <td><strong>{{ p.name }}</strong>
+            {% if p.is_active %}<span class="badge badge--ok">Activo</span>{% endif %}</td>
+          <td class="muted small">{{ p.start_date or '-' }}</td>
+          <td class="muted small">{{ p.end_date or '-' }}</td>
+          <td>
+            {% if not p.is_active %}
+            <form method="post" style="display:inline">
+              <input type="hidden" name="accion" value="periodo_activo">
+              <input type="hidden" name="period_id" value="{{ p.id }}">
+              <button class="btn btn--sm" type="submit">Activar</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <hr style="border:0;border-top:1px solid var(--line);margin:1rem 0">
+    <h3>Anadir periodo</h3>
+    <form class="form" method="post">
+      <input type="hidden" name="accion" value="periodo">
+      <input type="hidden" name="year_id" value="{{ year.id if year }}">
+      <div class="grid grid--2">
+        <label class="field"><span>Nombre</span>
+          <input type="text" name="name" placeholder="Periodo 4" required></label>
+        <label class="field"><span>Orden</span>
+          <input type="number" name="sequence" min="1" max="8" value="{{ periods|length + 1 }}"></label>
+      </div>
+      <div class="grid grid--2">
+        <label class="field"><span>Inicio</span><input type="date" name="start_date"></label>
+        <label class="field"><span>Fin</span><input type="date" name="end_date"></label>
+      </div>
+      <label class="inline"><input type="checkbox" name="is_active"> Marcar como periodo activo</label>
+      <button class="btn btn--primary" type="submit">Anadir periodo</button>
+    </form>
+  </div>
+
+  <div>
+    <div class="card">
+      <h2>Grupos</h2>
+      <table class="table table--compact">
+        <thead><tr><th>Grupo</th><th>Ano</th><th class="center">Estudiantes</th></tr></thead>
+        <tbody>
+          {% for g in groups %}
+          <tr><td><strong>{{ g.name }}</strong></td><td class="muted">{{ g.year_name }}</td>
+              <td class="center">{{ g.student_count }}</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <form class="form" method="post" style="margin-top:.8rem">
+        <input type="hidden" name="accion" value="grupo">
+        <input type="hidden" name="year_id" value="{{ year.id if year }}">
+        <div class="row">
+          <input type="text" name="name" placeholder="11-B" required>
+          <button class="btn btn--primary" type="submit">Anadir grupo</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Asignaturas</h2>
+      <div class="row" style="margin-bottom:.8rem">
+        {% for s in subjects %}<span class="badge badge--muted">{{ s.name }}</span>{% endfor %}
+      </div>
+      <form class="form" method="post">
+        <input type="hidden" name="accion" value="asignatura">
+        <div class="row">
+          <input type="text" name="name" placeholder="Educacion fisica" required>
+          <button class="btn btn--primary" type="submit">Anadir asignatura</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Anos lectivos</h2>
+      <div class="row" style="margin-bottom:.8rem">
+        {% for y in years %}
+          <span class="badge {{ 'badge--ok' if y.is_active else 'badge--muted' }}">{{ y.name }}</span>
+        {% endfor %}
+      </div>
+      <form class="form" method="post">
+        <input type="hidden" name="accion" value="anio">
+        <div class="row">
+          <input type="text" name="name" placeholder="2027" required>
+          <button class="btn" type="submit">Anadir y activar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

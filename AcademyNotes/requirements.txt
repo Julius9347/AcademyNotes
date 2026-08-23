@@ -1,0 +1,7 @@
+Flask>=3.0
+openpyxl>=3.1
+pytest>=8.0
+
+# Servidor de produccion. Solo se instala fuera de Windows: gunicorn no
+# funciona ahi, y en local se usa `python app.py`.
+gunicorn>=21.2; sys_platform != "win32"

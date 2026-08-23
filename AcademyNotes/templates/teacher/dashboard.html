@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Mis cursos - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Mis cursos</h1>
+    <p class="muted">
+      {% if year %}Ano lectivo {{ year.name }}{% endif %}
+      {% if period %} &middot; Periodo activo: <strong>{{ period.name }}</strong>{% endif %}
+    </p>
+  </div>
+  <div class="row">
+    {% if pending_reviews %}
+      <a class="btn btn--primary" href="{{ url_for('teacher.reviews') }}">
+        Solicitudes de revision <span class="badge badge--warn">{{ pending_reviews }}</span>
+      </a>
+    {% else %}
+      <a class="btn" href="{{ url_for('teacher.reviews') }}">Solicitudes de revision</a>
+    {% endif %}
+    <a class="btn" href="{{ url_for('teacher.history') }}">Mi historial</a>
+  </div>
+</div>
+
+{% if not assignments %}
+  <div class="card empty">
+    <h2>Todavia no tienes asignaciones</h2>
+    <p class="muted">El administrador debe asignarte una asignatura y un grupo.</p>
+  </div>
+{% else %}
+<div class="grid grid--3">
+  {% for a in assignments %}
+  <div class="card subject-card">
+    <div class="subject-card__head">
+      <div>
+        <h3>{{ a.subject_name }}</h3>
+        <span class="muted small">{{ a.group_name }} &middot; {{ a.student_count }} estudiantes</span>
+      </div>
+      {% if a.draft_count %}
+        <span class="badge badge--warn">{{ a.draft_count }} sin publicar</span>
+      {% else %}
+        <span class="badge badge--ok">Al dia</span>
+      {% endif %}
+    </div>
+
+    <div class="subject-card__meta">
+      <span>{{ a.activity_count }} actividad(es)</span>
+      <span>Ponderacion registrada: {{ a.total_weight }}%</span>
+    </div>
+
+    <div class="row">
+      <a class="btn btn--primary btn--sm"
+         href="{{ url_for('teacher.gradebook', assignment_id=a.id) }}">Abrir cuaderno</a>
+      <a class="btn btn--sm"
+         href="{{ url_for('teacher.export_excel', assignment_id=a.id) }}">Exportar Excel</a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

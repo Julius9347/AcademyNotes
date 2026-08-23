@@ -1,0 +1,12 @@
+.git
+.github
+.gitignore
+.vscode
+_legacy/
+instance/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/

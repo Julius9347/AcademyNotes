@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block title %}Preinformes - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Preinformes</h1>
+    <p class="muted">
+      Un preinforme define el momento en que la informacion se hace visible
+      para estudiantes y familias. Registrar no es publicar.
+    </p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <h2>Crear preinforme</h2>
+    <form class="form" method="post">
+      <label class="field"><span>Nombre</span>
+        <input type="text" name="name" placeholder="Preinforme 2 - Periodo 2" required></label>
+      <div class="grid grid--2">
+        <label class="field"><span>Periodo</span>
+          <select name="period_id" required>
+            {% for p in periods %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}
+          </select></label>
+        <label class="field"><span>Tipo</span>
+          <select name="kind">
+            <option value="preinforme">Preinforme</option>
+            <option value="final">Informe final</option>
+          </select></label>
+      </div>
+      <label class="field"><span>Fecha</span><input type="date" name="report_date"></label>
+      <button class="btn btn--primary" type="submit">Crear en borrador</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card__head"><h2>Preinformes del ano</h2></div>
+    <div class="table-wrap">
+      <table class="table table--compact">
+        <thead><tr><th>Nombre</th><th>Periodo</th><th>Tipo</th>
+                   <th class="center">Notas</th><th>Estado</th><th></th></tr></thead>
+        <tbody>
+          {% for r in reports %}
+          <tr>
+            <td><strong>{{ r.name }}</strong><br>
+              <span class="muted small">{{ r.report_date or '' }}</span></td>
+            <td class="muted">{{ r.period_name }}</td>
+            <td class="muted small">{{ r.kind }}</td>
+            <td class="center">{{ r.grade_count }}</td>
+            <td>
+              {% if r.status == 'publicado' %}
+                <span class="badge badge--ok">Publicado</span>
+              {% else %}
+                <span class="badge badge--warn">Borrador</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if r.status != 'publicado' %}
+              <form method="post"
+                    action="{{ url_for('admin.publish_report', report_id=r.id) }}">
+                <button class="btn btn--accent btn--sm" type="submit">Publicar</button>
+              </form>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

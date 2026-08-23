@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Asignaciones docentes - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Asignaciones docentes</h1>
+    <p class="muted">
+      Definen que puede tocar cada profesor. El backend verifica esta relacion
+      en cada operacion, no solo la interfaz.
+    </p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <h2>Nueva asignacion</h2>
+    <form class="form" method="post">
+      <input type="hidden" name="year_id" value="{{ year.id if year }}">
+      <label class="field"><span>Profesor</span>
+        <select name="teacher_id" required>
+          {% for t in teachers %}<option value="{{ t.id }}">{{ t.full_name }}</option>{% endfor %}
+        </select></label>
+      <div class="grid grid--2">
+        <label class="field"><span>Asignatura</span>
+          <select name="subject_id" required>
+            {% for s in subjects %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}
+          </select></label>
+        <label class="field"><span>Grupo</span>
+          <select name="group_id" required>
+            {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
+          </select></label>
+      </div>
+      <button class="btn btn--primary" type="submit">Crear asignacion</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card__head">
+      <h2>Asignaciones vigentes</h2>
+      <span class="badge badge--muted">{{ assignments|length }}</span>
+    </div>
+    <div class="table-wrap">
+      <table class="table table--compact">
+        <thead><tr><th>Profesor</th><th>Asignatura</th><th>Grupo</th>
+                   <th class="center">Estudiantes</th><th></th></tr></thead>
+        <tbody>
+          {% for a in assignments %}
+          <tr>
+            <td>{{ a.teacher_name }}</td>
+            <td><strong>{{ a.subject_name }}</strong></td>
+            <td>{{ a.group_name }}</td>
+            <td class="center">{{ a.student_count }}</td>
+            <td><a class="btn btn--sm"
+                   href="{{ url_for('teacher.gradebook', assignment_id=a.id) }}">Ver cuaderno</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

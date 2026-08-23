@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Acceso denegado - AcademyNotes{% endblock %}
+{% block content %}
+<div class="empty">
+  <h1>Acceso denegado</h1>
+  <p class="muted">{{ message or "No tienes permiso para ver esta informacion." }}</p>
+  <a class="btn btn--primary" href="{{ url_for('auth.index') }}">Volver al inicio</a>
+</div>
+{% endblock %}

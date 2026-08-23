@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Respaldos - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Copias de seguridad</h1>
+    <p class="muted">
+      Funcionalidad demostrativa: copia el archivo de la base y registra la
+      operacion. No es una solucion de recuperacion ante desastres.
+    </p>
+  </div>
+  <form method="post">
+    <button class="btn btn--primary" type="submit">Crear copia ahora</button>
+  </form>
+</div>
+
+<div class="card">
+  {% if not backups %}
+    <div class="empty">
+      <h2>Todavia no hay copias</h2>
+      <p class="muted">Crea la primera para ver como queda registrada.</p>
+    </div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Fecha</th><th>Archivo</th><th class="center">Tamano</th>
+            <th>Tipo</th><th>Usuario</th><th>Estado</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for b in backups %}
+        <tr>
+          <td class="small muted nowrap">{{ b.created_at }}</td>
+          <td><code>{{ b.filename }}</code></td>
+          <td class="center">{{ b.size_kb }} KB</td>
+          <td class="muted small">{{ b.kind }}</td>
+          <td class="small">{{ b.created_by_name or '-' }}</td>
+          <td>
+            {% if b.status == 'completado' %}<span class="badge badge--ok">Completado</span>
+            {% else %}<span class="badge badge--alert">{{ b.status }}</span>{% endif %}
+          </td>
+          <td>
+            <button class="btn btn--sm js-restaurar" data-id="{{ b.id }}">
+              Simular restauracion</button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+
+<div class="savebar" id="savebar"><span id="savebar-text"></span></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module">
+  import { postJson, status } from "{{ url_for('static', filename='js/ui.js') }}";
+  document.querySelectorAll('.js-restaurar').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const result = await postJson(`/admin/backups/${button.dataset.id}/restaurar`, {});
+      status(result.message, result.ok ? 'info' : 'error');
+    });
+  });
+</script>
+{% endblock %}

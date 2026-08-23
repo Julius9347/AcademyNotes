@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.vscode/
+
+# Base de datos, respaldos y clave de desarrollo del prototipo
+instance/
+
+# Codigo de la version anterior, archivado durante la reescritura a v0.1.
+# Se conserva solo como referencia: puede borrarse sin consecuencias.
+_legacy/

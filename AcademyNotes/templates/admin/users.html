@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Usuarios - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Usuarios</h1>
+    <p class="muted">Profesores, estudiantes, acudientes y administradores.</p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <h2>Crear usuario</h2>
+    <form class="form" method="post">
+      <label class="field"><span>Rol</span>
+        <select name="role" id="rol">
+          <option value="student">Estudiante</option>
+          <option value="teacher">Profesor</option>
+          <option value="family">Acudiente</option>
+          <option value="admin">Administrador</option>
+        </select></label>
+
+      <div class="grid grid--2">
+        <label class="field"><span>Nombre completo</span>
+          <input type="text" name="full_name" required></label>
+        <label class="field"><span>Usuario</span>
+          <input type="text" name="username" required></label>
+      </div>
+      <div class="grid grid--2">
+        <label class="field"><span>Contrasena</span>
+          <input type="text" name="password" value="demo1234" required></label>
+        <label class="field"><span>Correo (opcional)</span>
+          <input type="email" name="email"></label>
+      </div>
+
+      <div id="campos-student">
+        <div class="grid grid--2">
+          <label class="field"><span>Codigo de estudiante</span>
+            <input type="text" name="student_code" placeholder="EST019"></label>
+          <label class="field"><span>Grupo</span>
+            <select name="group_id">
+              {% for g in groups %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}
+            </select></label>
+        </div>
+      </div>
+
+      <div id="campos-family" style="display:none">
+        <label class="field"><span>Parentesco</span>
+          <input type="text" name="relationship" value="Acudiente"></label>
+        <label class="field"><span>Estudiantes a cargo</span>
+          <select name="student_ids" multiple size="6">
+            {% for s in students %}
+            <option value="{{ s.id }}">{{ s.full_name }} ({{ s.group_name or '-' }})</option>
+            {% endfor %}
+          </select></label>
+      </div>
+
+      <button class="btn btn--primary" type="submit">Crear usuario</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card__head">
+      <h2>Usuarios registrados</h2>
+      <span class="badge badge--muted">{{ users|length }}</span>
+    </div>
+    <div class="table-wrap" style="max-height:520px;overflow:auto">
+      <table class="table table--compact">
+        <thead><tr><th>Nombre</th><th>Usuario</th><th>Rol</th><th>Grupo</th></tr></thead>
+        <tbody>
+          {% for u in users %}
+          <tr>
+            <td>{{ u.full_name }}</td>
+            <td class="muted">{{ u.username }}</td>
+            <td><span class="badge badge--muted">{{ role_label.get(u.role, u.role) }}</span></td>
+            <td class="muted small">{{ u.group_name or '-' }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  const rol = document.getElementById('rol');
+  const bloques = { student: 'campos-student', family: 'campos-family' };
+  rol.addEventListener('change', () => {
+    Object.values(bloques).forEach((id) => {
+      document.getElementById(id).style.display = 'none';
+    });
+    if (bloques[rol.value]) {
+      document.getElementById(bloques[rol.value]).style.display = '';
+    }
+  });
+</script>
+{% endblock %}

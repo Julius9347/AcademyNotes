@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Seguimiento - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Seguimiento academico</h1>
+    <p class="muted">
+      Informacion para acompanar, no para sancionar: que esta pasando y que
+      conviene conversar.
+    </p>
+  </div>
+</div>
+
+{% if not resumen %}
+  <div class="card empty">
+    <h2>No hay estudiantes asociados a tu cuenta</h2>
+    <p class="muted">Solicita al colegio que vincule a tu acudido.</p>
+  </div>
+{% else %}
+<div class="grid grid--2">
+  {% for item in resumen %}
+  <div class="card subject-card">
+    <div class="subject-card__head">
+      <div>
+        <h2>{{ item.student.full_name }}</h2>
+        <span class="muted small">
+          {{ item.student.group_name or 'Sin grupo' }}
+          {% if item.period %}&middot; {{ item.period.name }}{% endif %}
+        </span>
+      </div>
+      <div class="subject-card__avg score
+        {% if item.promedio is none %}score--none
+        {% elif item.promedio < 3 %}score--alert
+        {% elif item.promedio < 3.5 %}score--warn
+        {% else %}score--ok{% endif %}">
+        {{ '-' if item.promedio is none else item.promedio }}
+      </div>
+    </div>
+
+    <div class="subject-card__meta">
+      <span>{{ item.asignaturas }} asignaturas</span>
+      <span>Pendientes: <strong>{{ item.pendientes }}</strong></span>
+      <span>Requieren atencion: <strong>{{ item.atencion|length }}</strong></span>
+    </div>
+
+    {% if item.atencion %}
+      <ul class="reasons">
+        {% for s in item.atencion %}
+        <li><strong>{{ s.subject_name }}</strong>: {{ s.motivos[0] }}</li>
+        {% endfor %}
+      </ul>
+    {% else %}
+      <p class="muted small">Sin senales de dificultad en el periodo actual.</p>
+    {% endif %}
+
+    <a class="btn btn--primary btn--sm"
+       href="{{ url_for('family.student_detail', student_id=item.student.id) }}">
+      Ver seguimiento completo
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

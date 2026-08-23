@@ -1,0 +1,150 @@
+{% extends "base.html" %}
+{% block title %}Mi progreso - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Hola, {{ student.full_name.split()[0] }}</h1>
+    <p class="muted">
+      {{ student.group_name or 'Sin grupo' }}
+      {% if period %}&middot; {{ period.name }}{% endif %}
+    </p>
+  </div>
+  <div class="row">
+    {% if periods %}
+    <form method="get" class="row">
+      <select name="periodo" onchange="this.form.submit()">
+        {% for p in periods %}
+        <option value="{{ p.id }}" {% if period and p.id == period.id %}selected{% endif %}>{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </form>
+    {% endif %}
+    <a class="btn" href="{{ url_for('student.reviews') }}">Mis solicitudes</a>
+  </div>
+</div>
+
+{% if not reporte_activo %}
+<div class="hint">
+  Ves las calificaciones que tus profesores ya publicaron en un preinforme.
+  Puede haber notas registradas que aun estan en revision.
+</div>
+{% endif %}
+
+<div class="grid grid--4" style="margin-bottom:1.1rem">
+  <div class="metric">
+    <div class="metric__value">{{ '-' if promedio_general is none else promedio_general }}</div>
+    <div class="metric__label">Promedio general del periodo</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summaries|length }}</div>
+    <div class="metric__label">Asignaturas</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summaries|sum(attribute='pending') }}</div>
+    <div class="metric__label">Actividades pendientes</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ atencion|length }}</div>
+    <div class="metric__label">Requieren atencion</div>
+  </div>
+</div>
+
+{% if atencion %}
+<div class="card">
+  <h2>Que conviene revisar primero</h2>
+  <p class="muted small">
+    Estas senales se calculan con reglas simples y siempre muestran su motivo.
+  </p>
+  {% for s in atencion %}
+  <div style="margin-bottom:.8rem">
+    <strong>{{ s.subject_name }}</strong>
+    <span class="badge badge--{{ estado_class.get(s.estado, 'muted') }}">{{ s.estado_label }}</span>
+    <ul class="reasons">
+      {% for motivo in s.motivos %}<li>{{ motivo }}</li>{% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if not summaries %}
+  <div class="card empty">
+    <h2>Todavia no hay informacion en este periodo</h2>
+    <p class="muted">Cuando tus profesores publiquen, la veras aqui.</p>
+  </div>
+{% else %}
+<div class="grid grid--3">
+  {% for s in summaries %}
+  <div class="card subject-card">
+    <div class="subject-card__head">
+      <div>
+        <h3>{{ s.subject_name }}</h3>
+        <span class="muted small">{{ s.teacher_name }}</span>
+      </div>
+      <div class="subject-card__avg score
+        {% if s.average is none %}score--none
+        {% elif s.average < 3 %}score--alert
+        {% elif s.average < 3.5 %}score--warn
+        {% else %}score--ok{% endif %}">
+        {{ '-' if s.average is none else s.average }}
+      </div>
+    </div>
+
+    <div>
+      <span class="badge badge--{{ estado_class.get(s.estado, 'muted') }}">{{ s.estado_label }}</span>
+      <span class="trend
+        {% if s.tendencia == 'ascendente' %}trend--up
+        {% elif s.tendencia == 'descendente' %}trend--down
+        {% else %}trend--flat{% endif %}">
+        {% if s.tendencia == 'ascendente' %}&#8599;{% elif s.tendencia == 'descendente' %}&#8600;{% else %}&#8594;{% endif %}
+        {{ s.tendencia_label }}
+      </span>
+    </div>
+
+    <div class="subject-card__meta">
+      <span>Actividades: {{ s.activities_graded }}/{{ s.activities_total }}</span>
+      {% if s.pending %}<span>Pendientes: <strong>{{ s.pending }}</strong></span>{% endif %}
+      {% if s.recovery_pending %}<span>Recuperacion: {{ s.recovery_pending }}</span>{% endif %}
+    </div>
+
+    <div class="progress">
+      <span style="width: {{ (s.activities_graded / s.activities_total * 100) if s.activities_total else 0 }}%"></span>
+    </div>
+
+    <ul class="reasons">
+      {% for motivo in s.motivos[:2] %}<li>{{ motivo }}</li>{% endfor %}
+    </ul>
+
+    <a class="btn btn--sm"
+       href="{{ url_for('student.subject_detail', assignment_id=s.assignment_id, periodo=period.id if period else None) }}">
+      Ver detalle
+    </a>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if reports %}
+<div class="card">
+  <h2>Preinformes publicados</h2>
+  <table class="table table--compact">
+    {% for r in reports %}
+    <tr>
+      <td><strong>{{ r.name }}</strong></td>
+      <td class="muted">{{ r.period_name }}</td>
+      <td class="muted small">{{ r.published_at or r.report_date or '' }}</td>
+      <td><span class="badge badge--ok">Publicado</span></td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+
+<div id="poll" data-last="{{ last_update }}" hidden></div>
+<div class="savebar" id="savebar"><span id="savebar-text"></span></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/student.js') }}"></script>
+{% endblock %}

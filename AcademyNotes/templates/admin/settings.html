@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Ajustes - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Ajustes del prototipo</h1>
+    <p class="muted">
+      Estas politicas son hipotesis de investigacion, no decisiones
+      institucionales. Estan aqui para poder cambiarlas durante una
+      demostracion y observar como reaccionan los usuarios.
+    </p>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <h2>Configuracion</h2>
+    <form class="form" method="post">
+      <label class="field"><span>Nombre de la institucion</span>
+        <input type="text" name="institucion" value="{{ settings.institucion }}"></label>
+
+      <label class="inline" style="margin-top:.5rem">
+        <input type="checkbox" name="reporte_activo" {% if reporte_activo %}checked{% endif %}>
+        <span><strong>Modo reporte activo</strong></span>
+      </label>
+      <p class="muted small">
+        Apagado: el estudiante y la familia solo ven lo publicado dentro de un
+        preinforme publicado.<br>
+        Encendido: ven toda calificacion publicada apenas el profesor la
+        publica, sin esperar al preinforme.
+      </p>
+
+      <button class="btn btn--primary" type="submit">Guardar configuracion</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Que sigue siendo hipotesis</h2>
+    <p class="muted small">
+      El prototipo no cierra estas decisiones; existe justamente para
+      recogerlas de los usuarios reales.
+    </p>
+    <ul class="reasons">
+      <li>Cuando deben publicarse las notas y con que frecuencia.</li>
+      <li>Cuantos periodos tiene el ano y como se cierran.</li>
+      <li>Los umbrales exactos de las alertas academicas.</li>
+      <li>Las reglas de recuperacion y sus plazos.</li>
+      <li>Que puede ver la familia y en que momento.</li>
+      <li>Los niveles de permiso dentro de la administracion.</li>
+    </ul>
+  </div>
+</div>
+{% endblock %}

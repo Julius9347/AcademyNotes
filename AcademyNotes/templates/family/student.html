@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}{{ student.full_name }} - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>{{ student.full_name }}</h1>
+    <p class="muted">
+      <a href="{{ url_for('family.dashboard') }}">Seguimiento</a> /
+      {{ student.group_name or 'Sin grupo' }}
+      {% if period %}&middot; {{ period.name }}{% endif %}
+    </p>
+  </div>
+  {% if periods %}
+  <form method="get" class="row">
+    <select name="periodo" onchange="this.form.submit()">
+      {% for p in periods %}
+      <option value="{{ p.id }}" {% if period and p.id == period.id %}selected{% endif %}>{{ p.name }}</option>
+      {% endfor %}
+    </select>
+  </form>
+  {% endif %}
+</div>
+
+{% if not reporte_activo %}
+<div class="hint">
+  Esta vista muestra la informacion que los profesores ya publicaron. Puede
+  haber calificaciones registradas que todavia estan en revision.
+</div>
+{% endif %}
+
+<div class="grid grid--4" style="margin-bottom:1.1rem">
+  <div class="metric">
+    <div class="metric__value">{{ '-' if promedio_general is none else promedio_general }}</div>
+    <div class="metric__label">Promedio general</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summaries|length }}</div>
+    <div class="metric__label">Asignaturas</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summaries|sum(attribute='pending') }}</div>
+    <div class="metric__label">Actividades pendientes</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ atencion|length }}</div>
+    <div class="metric__label">Requieren atencion</div>
+  </div>
+</div>
+
+{% if atencion %}
+<div class="card">
+  <h2>Como acompanar esta semana</h2>
+  {% for s in atencion %}
+  <div style="margin-bottom:1rem">
+    <strong>{{ s.subject_name }}</strong>
+    <span class="badge badge--{{ estado_class.get(s.estado, 'muted') }}">{{ s.estado_label }}</span>
+    <ul class="reasons">
+      {% for motivo in s.motivos %}<li>{{ motivo }}</li>{% endfor %}
+    </ul>
+    <p class="small"><strong>Sugerencia:</strong> {{ s.recomendacion }}</p>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="card__head">
+    <h2>Todas las asignaturas</h2>
+    <span class="muted small">Promedios ponderados sobre lo publicado</span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Asignatura</th><th>Profesor</th><th class="center">Promedio</th>
+            <th class="center">Actividades</th><th class="center">Pendientes</th>
+            <th>Tendencia</th><th>Estado</th></tr>
+      </thead>
+      <tbody>
+        {% for s in summaries %}
+        <tr>
+          <td><strong>{{ s.subject_name }}</strong></td>
+          <td class="muted small">{{ s.teacher_name }}</td>
+          <td class="center score
+            {% if s.average is none %}score--none
+            {% elif s.average < 3 %}score--alert
+            {% elif s.average < 3.5 %}score--warn
+            {% else %}score--ok{% endif %}">
+            {{ '-' if s.average is none else s.average }}</td>
+          <td class="center">{{ s.activities_graded }}/{{ s.activities_total }}</td>
+          <td class="center">{{ s.pending or '-' }}</td>
+          <td class="trend
+            {% if s.tendencia == 'ascendente' %}trend--up
+            {% elif s.tendencia == 'descendente' %}trend--down
+            {% else %}trend--flat{% endif %}">{{ s.tendencia_label }}</td>
+          <td><span class="badge badge--{{ estado_class.get(s.estado, 'muted') }}">{{ s.estado_label }}</span></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if reports %}
+<div class="card">
+  <h2>Preinformes publicados</h2>
+  <table class="table table--compact">
+    {% for r in reports %}
+    <tr>
+      <td><strong>{{ r.name }}</strong></td>
+      <td class="muted">{{ r.period_name }}</td>
+      <td class="muted small">{{ r.published_at or r.report_date or '' }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</div>
+{% endif %}
+{% endblock %}

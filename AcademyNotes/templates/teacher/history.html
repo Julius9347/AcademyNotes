@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Mi historial - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Mi historial</h1>
+    <p class="muted">
+      Todo lo que has registrado, modificado o publicado queda aqui. Es la
+      constancia de que el sistema no pierde ni cambia informacion en silencio.
+    </p>
+  </div>
+  <a class="btn" href="{{ url_for('teacher.dashboard') }}">Volver a mis cursos</a>
+</div>
+
+<div class="card">
+  {% if not entries %}
+    <div class="empty"><h2>Todavia no hay movimientos</h2></div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Fecha</th><th>Accion</th><th>Detalle</th><th class="center">Antes</th>
+            <th class="center">Despues</th></tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td class="small muted nowrap">{{ e.created_at }}</td>
+          <td>{{ e.action }}</td>
+          <td class="small">{{ e.description or '-' }}</td>
+          <td class="center muted">{{ e.old_value if e.old_value is not none else '-' }}</td>
+          <td class="center"><strong>{{ e.new_value if e.new_value is not none else '-' }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

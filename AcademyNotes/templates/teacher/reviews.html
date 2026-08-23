@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Solicitudes de revision - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Solicitudes de revision</h1>
+    <p class="muted">Peticiones de tus estudiantes sobre una calificacion.</p>
+  </div>
+  <a class="btn" href="{{ url_for('teacher.dashboard') }}">Volver a mis cursos</a>
+</div>
+
+{% if not requests %}
+  <div class="card empty">
+    <h2>No hay solicitudes</h2>
+    <p class="muted">Cuando un estudiante pida revisar una nota, aparecera aqui.</p>
+  </div>
+{% else %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Estudiante</th><th>Actividad</th><th class="center">Nota</th>
+          <th>Motivo</th><th>Estado</th><th>Fecha</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td>
+            <strong>{{ r.student_name }}</strong><br>
+            <span class="muted small">{{ r.subject_name }} &middot; {{ r.group_name }}</span>
+          </td>
+          <td>{{ r.activity_name }}</td>
+          <td class="center score">{{ '-' if r.score is none else r.score }}</td>
+          <td class="small">
+            {{ r.reason_label }}<br>
+            <span class="muted">{{ r.message }}</span>
+          </td>
+          <td>
+            {% if r.status == 'pendiente' %}<span class="badge badge--warn">Pendiente</span>
+            {% elif r.status == 'aceptada' %}<span class="badge badge--ok">Aceptada</span>
+            {% elif r.status == 'rechazada' %}<span class="badge badge--alert">Rechazada</span>
+            {% else %}<span class="badge badge--info">Revisada</span>{% endif %}
+            {% if r.teacher_response %}
+              <div class="muted small">{{ r.teacher_response }}</div>
+            {% endif %}
+          </td>
+          <td class="small muted nowrap">{{ r.created_at }}</td>
+          <td>
+            {% if r.status == 'pendiente' %}
+            <button class="btn btn--primary btn--sm js-responder"
+                    data-id="{{ r.id }}"
+                    data-student="{{ r.student_name }}"
+                    data-activity="{{ r.activity_name }}"
+                    data-score="{{ '' if r.score is none else r.score }}"
+                    data-message="{{ r.message }}">Responder</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="modal" id="modal-responder">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2>Responder solicitud</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="hint" id="resumen-solicitud"></div>
+      <form class="form" id="form-responder">
+        <input type="hidden" name="request_id">
+        <label class="field"><span>Decision</span>
+          <select name="status">
+            <option value="revisada">Revisada, la nota se mantiene</option>
+            <option value="aceptada">Aceptada, corrijo la nota</option>
+            <option value="rechazada">Rechazada</option>
+          </select></label>
+        <label class="field" id="campo-nota" style="display:none">
+          <span>Nueva nota</span>
+          <input type="text" name="new_score" inputmode="decimal" placeholder="Ej. 3.7">
+        </label>
+        <label class="field"><span>Explicacion para el estudiante</span>
+          <textarea name="response" required
+            placeholder="Explica que se reviso y por que."></textarea></label>
+        <p class="muted small">
+          Si cambias la nota, el cambio queda registrado en el historial con el
+          valor anterior y el nuevo.
+        </p>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btn-enviar-respuesta">Enviar respuesta</button>
+    </div>
+  </div>
+</div>
+
+<div class="savebar" id="savebar"><span id="savebar-text"></span></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/reviews.js') }}"></script>
+{% endblock %}

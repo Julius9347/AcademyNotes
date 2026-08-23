@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}AcademyNotes{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📘</text></svg>">
+</head>
+<body>
+{% if current_user %}
+<header class="topbar">
+  <div class="topbar__inner">
+    <a class="brand" href="{{ url_for('auth.index') }}">
+      <span class="brand__mark">AN</span>
+      <span class="brand__text">
+        <strong>AcademyNotes</strong>
+        <small>{{ institucion }}</small>
+      </span>
+    </a>
+
+    <nav class="nav">
+      {% if current_user.role == 'teacher' %}
+        <a href="{{ url_for('teacher.dashboard') }}">Mis cursos</a>
+        <a href="{{ url_for('teacher.reviews') }}">Solicitudes</a>
+        <a href="{{ url_for('teacher.history') }}">Historial</a>
+      {% elif current_user.role == 'student' %}
+        <a href="{{ url_for('student.dashboard') }}">Mi progreso</a>
+        <a href="{{ url_for('student.reviews') }}">Mis solicitudes</a>
+      {% elif current_user.role == 'family' %}
+        <a href="{{ url_for('family.dashboard') }}">Seguimiento</a>
+      {% elif current_user.role == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}">Inicio</a>
+        <a href="{{ url_for('admin.users') }}">Usuarios</a>
+        <a href="{{ url_for('admin.academic') }}">Academico</a>
+        <a href="{{ url_for('admin.assignments') }}">Asignaciones</a>
+        <a href="{{ url_for('admin.reports') }}">Preinformes</a>
+        <a href="{{ url_for('admin.audit') }}">Historial</a>
+        <a href="{{ url_for('admin.backups') }}">Respaldos</a>
+        <a href="{{ url_for('admin.settings') }}">Ajustes</a>
+      {% endif %}
+    </nav>
+
+    <div class="user">
+      <span class="user__name">{{ current_user.full_name }}</span>
+      <span class="user__role">{{ role_label.get(current_user.role, '') }}</span>
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('auth.logout') }}">Salir</a>
+    </div>
+  </div>
+</header>
+{% endif %}
+
+<main class="page">
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flashes">
+        {% for category, message in messages %}
+          <div class="flash flash--{{ category }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="footer">
+  AcademyNotes {{ app_version }} &middot; Prototipo de investigacion. Los datos
+  son simulados y las politicas de publicacion todavia son hipotesis por validar.
+</footer>
+
+{% block scripts %}{% endblock %}
+</body>
+</html>

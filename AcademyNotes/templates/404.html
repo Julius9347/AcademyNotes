@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Pagina no encontrada - AcademyNotes{% endblock %}
+{% block content %}
+<div class="empty">
+  <h1>Pagina no encontrada</h1>
+  <p class="muted">El recurso solicitado no existe.</p>
+  <a class="btn btn--primary" href="{{ url_for('auth.index') }}">Volver al inicio</a>
+</div>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Historial - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Historial y auditoria</h1>
+    <p class="muted">{{ total }} movimientos registrados.</p>
+  </div>
+  <form method="get" class="row">
+    <input type="text" name="q" value="{{ search }}" placeholder="Buscar usuario, accion o detalle">
+    <button class="btn" type="submit">Buscar</button>
+    {% if search %}<a class="btn btn--ghost" href="{{ url_for('admin.audit') }}">Limpiar</a>{% endif %}
+  </form>
+</div>
+
+<div class="card">
+  {% if not entries %}
+    <div class="empty"><h2>Sin resultados</h2></div>
+  {% else %}
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Fecha</th><th>Usuario</th><th>Accion</th><th>Entidad</th>
+            <th>Detalle</th><th class="center">Antes</th><th class="center">Despues</th></tr>
+      </thead>
+      <tbody>
+        {% for e in entries %}
+        <tr>
+          <td class="small muted nowrap">{{ e.created_at }}</td>
+          <td class="small"><strong>{{ e.user_name or 'Sistema' }}</strong><br>
+            <span class="muted">{{ role_label.get(e.role, e.role or '') }}</span></td>
+          <td class="small">{{ e.action }}</td>
+          <td class="small muted">{{ e.entity or '-' }}</td>
+          <td class="small">{{ e.description or '-' }}</td>
+          <td class="center muted">{{ e.old_value if e.old_value is not none else '-' }}</td>
+          <td class="center"><strong>{{ e.new_value if e.new_value is not none else '-' }}</strong></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block title %}Mis solicitudes - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Mis solicitudes de revision</h1>
+    <p class="muted">Estado de las revisiones que has pedido a tus profesores.</p>
+  </div>
+  <a class="btn" href="{{ url_for('student.dashboard') }}">Volver a mi progreso</a>
+</div>
+
+{% if not requests %}
+  <div class="card empty">
+    <h2>No has solicitado revisiones</h2>
+    <p class="muted">
+      Puedes pedir una revision desde el detalle de una asignatura cuando creas
+      que hay un error o no entiendes como se obtuvo una calificacion.
+    </p>
+  </div>
+{% else %}
+<div class="card">
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr><th>Asignatura</th><th>Actividad</th><th class="center">Nota</th>
+            <th>Motivo</th><th>Estado</th><th>Respuesta</th><th>Fecha</th></tr>
+      </thead>
+      <tbody>
+        {% for r in requests %}
+        <tr>
+          <td><strong>{{ r.subject_name }}</strong></td>
+          <td>{{ r.activity_name }}</td>
+          <td class="center score">{{ '-' if r.score is none else r.score }}</td>
+          <td class="small">{{ r.reason_label }}<br>
+            <span class="muted">{{ r.message }}</span></td>
+          <td>
+            {% if r.status == 'pendiente' %}<span class="badge badge--warn">Pendiente</span>
+            {% elif r.status == 'aceptada' %}<span class="badge badge--ok">Aceptada</span>
+            {% elif r.status == 'rechazada' %}<span class="badge badge--alert">Rechazada</span>
+            {% else %}<span class="badge badge--info">Revisada</span>{% endif %}
+          </td>
+          <td class="small">{{ r.teacher_response or '-' }}</td>
+          <td class="small muted nowrap">{{ r.created_at }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

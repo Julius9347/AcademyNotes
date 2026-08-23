@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% block title %}{{ assignment.subject_name }} - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>{{ assignment.subject_name }}</h1>
+    <p class="muted">
+      <a href="{{ url_for('student.dashboard') }}">Mi progreso</a> /
+      {{ assignment.teacher_name }}
+      {% if period %}&middot; {{ period.name }}{% endif %}
+    </p>
+  </div>
+</div>
+
+{% if not summary %}
+  <div class="card empty"><h2>Sin informacion en este periodo</h2></div>
+{% else %}
+
+<div class="grid grid--4" style="margin-bottom:1.1rem">
+  <div class="metric">
+    <div class="metric__value">{{ '-' if summary.average is none else summary.average }}</div>
+    <div class="metric__label">Promedio ponderado</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summary.activities_graded }}/{{ summary.activities_total }}</div>
+    <div class="metric__label">Actividades calificadas</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value">{{ summary.pending }}</div>
+    <div class="metric__label">Pendientes</div>
+  </div>
+  <div class="metric">
+    <div class="metric__value" style="font-size:1rem;padding-top:.4rem">
+      <span class="badge badge--{{ estado_class.get(summary.estado, 'muted') }}">{{ summary.estado_label }}</span>
+    </div>
+    <div class="metric__label">Estado &middot; tendencia {{ summary.tendencia_label|lower }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2>Por que aparece este estado</h2>
+  <ul class="reasons">
+    {% for motivo in summary.motivos %}<li>{{ motivo }}</li>{% endfor %}
+  </ul>
+</div>
+
+<div class="card">
+  <div class="card__head">
+    <h2>Actividades del periodo</h2>
+    <span class="muted small">
+      El promedio es ponderado: cada actividad pesa distinto.
+    </span>
+  </div>
+  <div class="table-wrap">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Actividad</th><th>Tipo</th><th class="center">Peso</th>
+          <th>Fecha</th><th class="center">Nota</th><th>Retroalimentacion</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for a in summary.activities %}
+        <tr>
+          <td><strong>{{ a.activity_name }}</strong></td>
+          <td class="muted small">{{ a.kind }}</td>
+          <td class="center">{{ a.weight }}%</td>
+          <td class="muted small nowrap">{{ a.due_date or '-' }}</td>
+          <td class="center">
+            {% if a.score is not none %}
+              <span class="score {% if a.score < 3 %}score--alert{% elif a.score < 3.5 %}score--warn{% else %}score--ok{% endif %}">
+                {{ a.score }}</span>
+            {% elif a.is_missing %}
+              <span class="badge badge--alert">No entregada</span>
+            {% else %}
+              <span class="badge badge--muted">Sin publicar</span>
+            {% endif %}
+          </td>
+          <td class="small">
+            {% if a.feedback_category %}
+              <span class="badge badge--info">{{ a.feedback_category }}</span>
+            {% endif %}
+            {% if a.feedback_text %}<div class="muted">{{ a.feedback_text }}</div>{% endif %}
+            {% if a.recovery_status and a.recovery_status != 'ninguna' %}
+              <span class="badge badge--warn">Recuperacion {{ a.recovery_status }}</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if a.id %}
+            <button class="btn btn--sm js-revisar"
+                    data-grade="{{ a.id }}"
+                    data-activity="{{ a.activity_name }}"
+                    data-score="{{ a.score }}">Solicitar revision</button>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="modal" id="modal-revision">
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2>Solicitar revision</h2>
+      <button class="modal__close" data-close>&times;</button>
+    </div>
+    <div class="modal__body">
+      <div class="hint" id="resumen-revision"></div>
+      <div class="hint hint--warn">
+        <strong>Antes de enviar:</strong>
+        <ul style="margin:.3rem 0 0 .9rem;padding:0">
+          {% for guia in motivos_guia %}<li>{{ guia }}</li>{% endfor %}
+        </ul>
+      </div>
+      <form class="form" id="form-revision">
+        <input type="hidden" name="grade_id">
+        <label class="field"><span>Motivo</span>
+          <select name="reason_code">
+            {% for code, label in motivos.items() %}
+            <option value="{{ code }}">{{ label }}</option>
+            {% endfor %}
+          </select></label>
+        <label class="field"><span>Explicacion</span>
+          <textarea name="message" required
+            placeholder="Cuenta que deseas que se revise y por que."></textarea></label>
+      </form>
+    </div>
+    <div class="modal__foot">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn btn--primary" id="btn-enviar-revision">Enviar solicitud</button>
+    </div>
+  </div>
+</div>
+
+<div class="savebar" id="savebar"><span id="savebar-text"></span></div>
+{% endblock %}
+
+{% block scripts %}
+<script type="module" src="{{ url_for('static', filename='js/student.js') }}"></script>
+{% endblock %}

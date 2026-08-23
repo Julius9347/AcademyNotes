@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Entrar - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="login">
+  <div class="login__card">
+    <div class="login__brand">
+      <span class="brand__mark brand__mark--lg">AN</span>
+      <h1>AcademyNotes</h1>
+      <p class="muted">{{ institucion }}</p>
+    </div>
+
+    {% if error %}<div class="flash flash--error">{{ error }}</div>{% endif %}
+
+    <form method="post" class="form">
+      <label class="field">
+        <span>Usuario</span>
+        <input type="text" name="username" autocomplete="username" autofocus required>
+      </label>
+      <label class="field">
+        <span>Contrasena</span>
+        <input type="password" name="password" autocomplete="current-password" required>
+      </label>
+      <button class="btn btn--primary btn--block" type="submit">Entrar</button>
+    </form>
+
+    <details class="login__demo">
+      <summary>Usuarios de demostracion</summary>
+      <table class="table table--compact">
+        <tr><td>admin</td><td class="muted">Administrador</td></tr>
+        <tr><td>crodriguez</td><td class="muted">Profesor de Matematicas</td></tr>
+        <tr><td>jperez</td><td class="muted">Estudiante 10-A</td></tr>
+        <tr><td>mperez</td><td class="muted">Acudiente</td></tr>
+      </table>
+      <p class="muted">Contrasena para todos: <code>demo1234</code></p>
+    </details>
+  </div>
+
+  <aside class="login__aside">
+    <h2>Seguimiento academico, no solo notas</h2>
+    <p>
+      AcademyNotes es un prototipo de investigacion para acompanar el proceso
+      academico: que actividades hay, cuales faltan, como evoluciona el
+      desempeno y cuando conviene intervenir.
+    </p>
+    <ul class="checklist">
+      <li>Registrar, revisar y publicar: la nota se publica cuando el profesor decide.</li>
+      <li>Promedios ponderados por actividad, no promedios simples.</li>
+      <li>Alertas explicables, con motivos visibles.</li>
+      <li>Historial de cambios de cada calificacion.</li>
+      <li>Importacion y exportacion en Excel con previsualizacion.</li>
+    </ul>
+  </aside>
+</div>
+{% endblock %}

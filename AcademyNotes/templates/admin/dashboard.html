@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block title %}Administracion - AcademyNotes{% endblock %}
+
+{% block content %}
+<div class="page__head">
+  <div>
+    <h1>Administracion</h1>
+    <p class="muted">
+      {% if year %}Ano lectivo {{ year.name }}{% endif %}
+      {% if period %}&middot; Periodo activo: <strong>{{ period.name }}</strong>{% endif %}
+    </p>
+  </div>
+  <div class="row">
+    <span class="badge {{ 'badge--ok' if reporte_activo else 'badge--muted' }}">
+      Reporte activo: {{ 'encendido' if reporte_activo else 'apagado' }}
+    </span>
+    <a class="btn btn--sm" href="{{ url_for('admin.settings') }}">Cambiar</a>
+  </div>
+</div>
+
+<div class="grid grid--4" style="margin-bottom:1.1rem">
+  <div class="metric"><div class="metric__value">{{ metrics.estudiantes }}</div>
+    <div class="metric__label">Estudiantes</div></div>
+  <div class="metric"><div class="metric__value">{{ metrics.profesores }}</div>
+    <div class="metric__label">Profesores</div></div>
+  <div class="metric"><div class="metric__value">{{ metrics.acudientes }}</div>
+    <div class="metric__label">Acudientes</div></div>
+  <div class="metric"><div class="metric__value">{{ metrics.grupos }}</div>
+    <div class="metric__label">Grupos</div></div>
+</div>
+
+<div class="grid grid--4" style="margin-bottom:1.1rem">
+  <div class="metric"><div class="metric__value">{{ metrics.asignaturas }}</div>
+    <div class="metric__label">Asignaturas</div></div>
+  <div class="metric"><div class="metric__value">{{ metrics.actividades }}</div>
+    <div class="metric__label">Actividades</div></div>
+  <div class="metric"><div class="metric__value">{{ metrics.notas }}</div>
+    <div class="metric__label">Calificaciones registradas</div></div>
+  <div class="metric">
+    <div class="metric__value">{{ metrics.borradores }}</div>
+    <div class="metric__label">En borrador (sin publicar)</div>
+  </div>
+</div>
+
+<div class="grid grid--2">
+  <div class="card">
+    <h2>Atajos</h2>
+    <div class="row">
+      <a class="btn btn--sm" href="{{ url_for('admin.users') }}">Crear usuario</a>
+      <a class="btn btn--sm" href="{{ url_for('admin.academic') }}">Periodos y grupos</a>
+      <a class="btn btn--sm" href="{{ url_for('admin.assignments') }}">Asignaciones docentes</a>
+      <a class="btn btn--sm" href="{{ url_for('admin.reports') }}">Preinformes</a>
+      <a class="btn btn--sm" href="{{ url_for('admin.backups') }}">Respaldos</a>
+    </div>
+    {% if metrics.solicitudes %}
+    <div class="hint hint--warn" style="margin-top:1rem">
+      Hay {{ metrics.solicitudes }} solicitud(es) de revision pendientes de
+      respuesta por parte de los profesores.
+    </div>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card__head">
+      <h2>Ultimos movimientos</h2>
+      <a class="btn btn--sm" href="{{ url_for('admin.audit') }}">Ver historial</a>
+    </div>
+    <ul class="timeline">
+      {% for e in entries %}
+      <li>
+        <div class="small"><strong>{{ e.user_name }}</strong> &middot; {{ e.action }}</div>
+        <div class="muted small">{{ e.description or '' }}</div>
+        <div class="muted small">{{ e.created_at }}</div>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+{% endblock %}
