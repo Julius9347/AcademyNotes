@@ -182,9 +182,15 @@ usuarios reales.
 
 **En línea:** <https://academynotes-demo-production.up.railway.app>
 
-Desplegado en **Railway** desde este repositorio. Cada cambio que entra en
-`main` se redespliega automáticamente: Railway observa la rama y reconstruye la
-imagen, sin CLI ni tokens que mantener.
+Desplegado en **Railway** desde este repositorio, construyendo con el
+`Dockerfile`.
+
+> **Pendiente: el redespliegue automático todavía no está activo.** El servicio
+> se creó por API y quedó sin disparador de GitHub, así que un `push` a `main`
+> no reconstruye nada por sí solo. Para activarlo, en el panel de Railway:
+> servicio `academynotes-demo` → *Settings* → *Source* → conectar el repositorio
+> `Julius9347/AcademyNotes` y conceder acceso a la GitHub App de Railway.
+> Mientras tanto, se despliega a mano con *Redeploy* en el panel.
 
 | | |
 |---|---|

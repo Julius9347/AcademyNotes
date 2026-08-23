@@ -113,9 +113,13 @@ matches on (never names).
 
 Live at <https://academynotes-demo-production.up.railway.app> — Railway project
 `AcademyNotes`, service `academynotes-demo`, built from the `Dockerfile` with
-root directory `AcademyNotes`. **Railway redeploys automatically on every push
-to `main`**, so a push is a release: it reaches the URL people are giving
-feedback on within a couple of minutes.
+root directory `AcademyNotes`.
+
+**Auto-deploy on push is NOT active yet.** The service was created through the
+API and has no GitHub deployment trigger, so pushing to `main` does not rebuild
+anything; the user has to connect the repo once in the Railway dashboard
+(service → Settings → Source). Until that is done, do not tell the user a push
+reached the live demo — verify with `list-deployments` before claiming it.
 
 The demo database is baked into the image at build time (`RUN python seed.py`),
 so every deploy resets the data to a clean, reproducible demo. Don't add a
