@@ -180,74 +180,62 @@ usuarios reales.
 
 ## Despliegue
 
-> **Estado: preparado, sin desplegar.** Los archivos están listos y verificados,
-> pero todavía no se ha creado ninguna aplicación en Fly.
+> **Estado: sin desplegar y sin plataforma elegida.** Por ahora el prototipo se
+> ejecuta en local con `python app.py`. Lo que hay en el repositorio es la
+> preparación genérica, reutilizable con cualquier opción que se decida.
 
-El prototipo está preparado para **Fly.io**, con redespliegue automático en cada
-cambio de `main`. El flujo está en `.github/workflows/fly-deploy.yml`: primero
-corre la suite de pruebas y **solo si pasa** despliega, para que nadie que esté
-dando retroalimentación se encuentre con una demostración rota. Mientras no
-exista el secreto `FLY_API_TOKEN`, el paso de despliegue se omite con un aviso
-en vez de fallar.
+### Lo que ya está listo
 
-### Coste (comprobado en agosto de 2026)
+Nada de esto depende de una plataforma concreta:
 
-Fly.io **eliminó su nivel gratuito en 2024**. Hoy solo ofrece una prueba de
-**2 horas de máquina o 7 días**, lo que se agote primero, y exige tarjeta de
-crédito en todas las organizaciones.
+| Archivo | Para qué sirve |
+|---|---|
+| `Dockerfile` | Imagen lista, con la demo sembrada en tiempo de construcción (arranque < 1 s) |
+| `.dockerignore` | Deja fuera `_legacy/`, `instance/` y el historial de git |
+| `Procfile` | Comando de arranque para plataformas que lo leen (Render, Railway, Heroku) |
+| `wsgi.py` | Entrada de producción con gunicorn, sin modo debug; siembra si no encuentra base |
+| `config.py` | `ACADEMYNOTES_SECRET_KEY`, `ACADEMYNOTES_DATA_DIR` y `ACADEMYNOTES_HTTPS` por entorno |
+| `.github/workflows/ci.yml` | Ejecuta las pruebas en cada cambio de `main` y en cada pull request |
 
-Con el `fly.toml` de este repositorio (`shared-cpu-1x`, 512 MB, encendida
-permanentemente) el coste es de **~3,3 USD/mes**. Ese gasto compra continuidad:
-sin esperas al abrir el enlace y los datos sobreviven toda una sesión de
-retroalimentación.
+### El requisito que condiciona la elección
 
-Alternativas, si el coste importa más que esa continuidad:
+**Tiene que ser un contenedor o una máquina persistente, no serverless.** La
+aplicación escribe en SQLite, y las plataformas serverless (Vercel, Netlify
+Functions, Lambda) dan un sistema de archivos efímero y distinto por instancia:
+las notas que guardara un profesor no las vería el estudiante, y el historial se
+perdería. Usarlas exigiría migrar antes a Postgres.
 
-- **Fly con apagado automático** (`auto_stop_machines = 'stop'` y
-  `min_machines_running = 0`): baja a céntimos al mes, con arranque en frío de
-  1-3 s, pero los datos se reinician cada vez que la máquina se apaga por
-  inactividad.
-- **Render, plan gratuito**: 0 USD y auto-deploy nativo desde `main` sin CLI,
-  pero el servicio se duerme a los 15 minutos y tarda ~50 s en despertar.
+Sirven, por tanto: Render, Railway, Fly, Koyeb o una máquina propia.
 
-Cuidado con la combinación de la prueba gratuita y la configuración actual: con
-la máquina siempre encendida, las 2 horas de prueba se agotan la misma tarde.
+### Qué falta cuando se elija
 
-Puesta en marcha (una sola vez, requiere tu cuenta de Fly):
+1. El archivo de configuración propio de la plataforma (`render.yaml`,
+   `fly.toml`, etc.).
+2. Un segundo job en `ci.yml` con `needs: pruebas`, para no publicar nunca una
+   versión que no pasa las pruebas.
+3. `ACADEMYNOTES_SECRET_KEY` como variable de entorno. Sin ella, cada reinicio
+   genera una clave nueva y cierra todas las sesiones.
+4. `ACADEMYNOTES_HTTPS=1` si la plataforma sirve por HTTPS, para que la cookie
+   de sesión viaje como `Secure`.
 
-Todos los comandos se ejecutan desde la carpeta `AcademyNotes/`, que es donde
-está `fly.toml`. En Windows, abre una terminal **nueva** después de instalar
-flyctl para que quede en el `PATH`.
+### Sobre los datos
 
-```powershell
-# 1. Iniciar sesión (abre el navegador)
-flyctl auth login
+Con el `Dockerfile` actual **los datos se reinician en cada despliegue**: la
+base viaja horneada en la imagen, así que cada versión arranca con una demo
+limpia y reproducible. Lo que un profesor registre durante una sesión de
+retroalimentación se pierde al desplegar de nuevo.
 
-# 2. Crear la aplicación. El nombre debe ser único en todo Fly;
-#    si está tomado, elige otro y cámbialo también en fly.toml.
-flyctl apps create academynotes-demo
+Si más adelante conviene conservarlo, basta con montar un disco persistente en
+la ruta que indique `ACADEMYNOTES_DATA_DIR`: `wsgi.py` detecta si ya existe una
+base y solo siembra cuando no la encuentra.
 
-# 3. Clave de sesión estable (si no, cada reinicio cierra las sesiones)
-flyctl secrets set ACADEMYNOTES_SECRET_KEY=$(python -c "import secrets;print(secrets.token_hex(32))")
+### Nota de costes (comprobado en agosto de 2026)
 
-# 4. Primer despliegue
-flyctl deploy
-
-# 5. Token para que GitHub Actions pueda desplegar
-flyctl tokens create deploy
-#    Copia la salida completa (empieza por FlyV1) en GitHub:
-#    Settings > Secrets and variables > Actions > New repository secret
-#    Nombre: FLY_API_TOKEN
-```
-
-A partir de ahí, cada `git push` a `main` despliega solo.
-
-**Los datos se reinician en cada despliegue.** La máquina no tiene disco
-persistente, así que `wsgi.py` regenera los datos de demostración al arrancar:
-cada versión desplegada empieza con una demo limpia y reproducible. Lo que un
-profesor registre durante una sesión se pierde en el siguiente despliegue — si
-más adelante quieres conservarlo, hay que añadir un volumen de Fly montado en
-`/data` (la ruta ya es configurable con `ACADEMYNOTES_DATA_DIR`).
+Conviene verificar los niveles gratuitos antes de decidir, porque han cambiado:
+Fly.io **eliminó el suyo en 2024** — hoy solo ofrece una prueba de 2 horas de
+máquina o 7 días, con tarjeta obligatoria — y Render mantiene uno gratuito, pero
+el servicio se duerme a los 15 minutos y tarda unos 50 s en despertar. Un
+contenedor pequeño encendido de forma permanente ronda los 3 USD/mes.
 
 ## Limitaciones del prototipo
 

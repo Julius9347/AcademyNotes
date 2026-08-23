@@ -1,0 +1,37 @@
+name: Pruebas
+
+# Cada cambio en main y cada pull request ejecutan la suite completa.
+#
+# Cuando se elija plataforma de despliegue, aqui se anade un segundo job con
+# `needs: pruebas`, para que nunca se publique una version que no pasa las
+# pruebas: quien esta dando retroalimentacion no deberia toparse con una
+# demostracion rota.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: AcademyNotes
+
+jobs:
+  pruebas:
+    name: Pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: AcademyNotes/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r requirements.txt
+
+      - name: Ejecutar la suite
+        run: python -m pytest tests -q
