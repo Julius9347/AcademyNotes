@@ -180,13 +180,34 @@ usuarios reales.
 
 ## Despliegue
 
-> **Estado: sin desplegar y sin plataforma elegida.** Por ahora el prototipo se
-> ejecuta en local con `python app.py`. Lo que hay en el repositorio es la
-> preparación genérica, reutilizable con cualquier opción que se decida.
+**En línea:** <https://academynotes-demo-production.up.railway.app>
 
-### Lo que ya está listo
+Desplegado en **Railway** desde este repositorio. Cada cambio que entra en
+`main` se redespliega automáticamente: Railway observa la rama y reconstruye la
+imagen, sin CLI ni tokens que mantener.
 
-Nada de esto depende de una plataforma concreta:
+| | |
+|---|---|
+| Proyecto | `AcademyNotes` (workspace `jdrg4's Projects`) |
+| Servicio | `academynotes-demo`, entorno `production` |
+| Origen | `Julius9347/AcademyNotes`, rama `main`, raíz `AcademyNotes` |
+| Construcción | `Dockerfile` (ver `railway.json`) |
+| Salud | `GET /entrar`, reinicio ante fallo con 3 reintentos |
+
+Variables configuradas en el servicio: `ACADEMYNOTES_SECRET_KEY` (clave de
+sesión estable), `ACADEMYNOTES_HTTPS=1` (cookie `Secure`) y
+`ACADEMYNOTES_DATA_DIR=/data`.
+
+**Los datos se reinician en cada despliegue.** La base viaja horneada en la
+imagen, así que cada versión arranca con una demo limpia y reproducible. Lo que
+un profesor registre durante una sesión de retroalimentación se pierde al
+desplegar de nuevo. Para conservarlo habría que montar un volumen en la ruta de
+`ACADEMYNOTES_DATA_DIR`: `wsgi.py` detecta si ya existe una base y solo siembra
+cuando no la encuentra.
+
+### Lo que hace portable este montaje
+
+Nada de esto depende de Railway, por si conviene cambiar de plataforma:
 
 | Archivo | Para qué sirve |
 |---|---|
@@ -197,37 +218,13 @@ Nada de esto depende de una plataforma concreta:
 | `config.py` | `ACADEMYNOTES_SECRET_KEY`, `ACADEMYNOTES_DATA_DIR` y `ACADEMYNOTES_HTTPS` por entorno |
 | `.github/workflows/ci.yml` | Ejecuta las pruebas en cada cambio de `main` y en cada pull request |
 
-### El requisito que condiciona la elección
-
-**Tiene que ser un contenedor o una máquina persistente, no serverless.** La
-aplicación escribe en SQLite, y las plataformas serverless (Vercel, Netlify
+Si algún día se cambia de plataforma, el requisito que descarta opciones es
+este: **tiene que ser un contenedor o una máquina persistente, no serverless.**
+La aplicación escribe en SQLite, y las plataformas serverless (Vercel, Netlify
 Functions, Lambda) dan un sistema de archivos efímero y distinto por instancia:
 las notas que guardara un profesor no las vería el estudiante, y el historial se
-perdería. Usarlas exigiría migrar antes a Postgres.
-
-Sirven, por tanto: Render, Railway, Fly, Koyeb o una máquina propia.
-
-### Qué falta cuando se elija
-
-1. El archivo de configuración propio de la plataforma (`render.yaml`,
-   `fly.toml`, etc.).
-2. Un segundo job en `ci.yml` con `needs: pruebas`, para no publicar nunca una
-   versión que no pasa las pruebas.
-3. `ACADEMYNOTES_SECRET_KEY` como variable de entorno. Sin ella, cada reinicio
-   genera una clave nueva y cierra todas las sesiones.
-4. `ACADEMYNOTES_HTTPS=1` si la plataforma sirve por HTTPS, para que la cookie
-   de sesión viaje como `Secure`.
-
-### Sobre los datos
-
-Con el `Dockerfile` actual **los datos se reinician en cada despliegue**: la
-base viaja horneada en la imagen, así que cada versión arranca con una demo
-limpia y reproducible. Lo que un profesor registre durante una sesión de
-retroalimentación se pierde al desplegar de nuevo.
-
-Si más adelante conviene conservarlo, basta con montar un disco persistente en
-la ruta que indique `ACADEMYNOTES_DATA_DIR`: `wsgi.py` detecta si ya existe una
-base y solo siembra cuando no la encuentra.
+perdería. Usarlas exigiría migrar antes a Postgres. Sirven Render, Fly, Koyeb o
+una máquina propia.
 
 ### Nota de costes (comprobado en agosto de 2026)
 

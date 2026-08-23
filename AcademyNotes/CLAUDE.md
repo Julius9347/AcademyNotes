@@ -109,6 +109,18 @@ matches on (never names).
 - The feedback "suggestion" is rule-based simulation. There is no AI, and it
   must never set a score.
 
+## Deployment
+
+Live at <https://academynotes-demo-production.up.railway.app> — Railway project
+`AcademyNotes`, service `academynotes-demo`, built from the `Dockerfile` with
+root directory `AcademyNotes`. **Railway redeploys automatically on every push
+to `main`**, so a push is a release: it reaches the URL people are giving
+feedback on within a couple of minutes.
+
+The demo database is baked into the image at build time (`RUN python seed.py`),
+so every deploy resets the data to a clean, reproducible demo. Don't add a
+volume without being asked — the reset is the intended behaviour.
+
 ## Publishing changes (standing instruction from the user)
 
 Push to `main` continuously — small, frequent commits rather than one big drop
