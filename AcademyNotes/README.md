@@ -180,10 +180,38 @@ usuarios reales.
 
 ## Despliegue
 
-El prototipo se despliega en **Fly.io** y se redespliega solo con cada cambio
-en `main`. El flujo está en `.github/workflows/fly-deploy.yml`: primero corre
-la suite de pruebas y **solo si pasa** despliega, para que nadie que esté dando
-retroalimentación se encuentre con una demostración rota.
+> **Estado: preparado, sin desplegar.** Los archivos están listos y verificados,
+> pero todavía no se ha creado ninguna aplicación en Fly.
+
+El prototipo está preparado para **Fly.io**, con redespliegue automático en cada
+cambio de `main`. El flujo está en `.github/workflows/fly-deploy.yml`: primero
+corre la suite de pruebas y **solo si pasa** despliega, para que nadie que esté
+dando retroalimentación se encuentre con una demostración rota. Mientras no
+exista el secreto `FLY_API_TOKEN`, el paso de despliegue se omite con un aviso
+en vez de fallar.
+
+### Coste (comprobado en agosto de 2026)
+
+Fly.io **eliminó su nivel gratuito en 2024**. Hoy solo ofrece una prueba de
+**2 horas de máquina o 7 días**, lo que se agote primero, y exige tarjeta de
+crédito en todas las organizaciones.
+
+Con el `fly.toml` de este repositorio (`shared-cpu-1x`, 512 MB, encendida
+permanentemente) el coste es de **~3,3 USD/mes**. Ese gasto compra continuidad:
+sin esperas al abrir el enlace y los datos sobreviven toda una sesión de
+retroalimentación.
+
+Alternativas, si el coste importa más que esa continuidad:
+
+- **Fly con apagado automático** (`auto_stop_machines = 'stop'` y
+  `min_machines_running = 0`): baja a céntimos al mes, con arranque en frío de
+  1-3 s, pero los datos se reinician cada vez que la máquina se apaga por
+  inactividad.
+- **Render, plan gratuito**: 0 USD y auto-deploy nativo desde `main` sin CLI,
+  pero el servicio se duerme a los 15 minutos y tarda ~50 s en despertar.
+
+Cuidado con la combinación de la prueba gratuita y la configuración actual: con
+la máquina siempre encendida, las 2 horas de prueba se agotan la misma tarde.
 
 Puesta en marcha (una sola vez, requiere tu cuenta de Fly):
 
