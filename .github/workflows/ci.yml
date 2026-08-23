@@ -1,11 +1,8 @@
-name: Pruebas
+name: Pruebas y despliegue
 
 # Cada cambio en main y cada pull request ejecutan la suite completa.
-#
-# Cuando se elija plataforma de despliegue, aqui se anade un segundo job con
-# `needs: pruebas`, para que nunca se publique una version que no pasa las
-# pruebas: quien esta dando retroalimentacion no deberia toparse con una
-# demostracion rota.
+# El despliegue solo ocurre si las pruebas pasan: quien esta dando
+# retroalimentacion no deberia toparse con una demostracion rota.
 on:
   push:
     branches: [main]
@@ -35,3 +32,38 @@ jobs:
 
       - name: Ejecutar la suite
         run: python -m pytest tests -q
+
+  desplegar:
+    name: Desplegar en Railway
+    needs: pruebas
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: railway-deploy
+      cancel-in-progress: true
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+
+      # Este job es la ALTERNATIVA al disparador nativo de Railway, no un
+      # complemento: si Railway ya redespliega solo al detectar el push, no
+      # configures RAILWAY_TOKEN o cada cambio se desplegaria dos veces.
+      # Sin el secreto, el paso se omite con un aviso en lugar de fallar.
+      - name: Comprobar configuracion
+        id: config
+        run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "listo=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::RAILWAY_TOKEN no esta configurado. Se omite el despliegue: se asume que Railway redespliega por su cuenta."
+          else
+            echo "listo=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Instalar Railway CLI
+        if: steps.config.outputs.listo == 'true'
+        run: npm install -g @railway/cli
+
+      - name: Desplegar
+        if: steps.config.outputs.listo == 'true'
+        run: railway up --service academynotes-demo --detach
