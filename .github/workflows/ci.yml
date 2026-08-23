@@ -10,6 +10,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Minimo indispensable: ningun job necesita escribir en el repositorio.
+permissions:
+  contents: read
+
 defaults:
   run:
     working-directory: AcademyNotes
@@ -41,8 +45,6 @@ jobs:
     concurrency:
       group: railway-deploy
       cancel-in-progress: true
-    env:
-      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
     steps:
       - uses: actions/checkout@v4
 
@@ -50,20 +52,32 @@ jobs:
       # complemento: si Railway ya redespliega solo al detectar el push, no
       # configures RAILWAY_TOKEN o cada cambio se desplegaria dos veces.
       # Sin el secreto, el paso se omite con un aviso en lugar de fallar.
+      #
+      # Se comprueba solo SI EXISTE el secreto, sin exponer su valor.
       - name: Comprobar configuracion
         id: config
+        env:
+          TIENE_TOKEN: ${{ secrets.RAILWAY_TOKEN != '' }}
         run: |
-          if [ -z "$RAILWAY_TOKEN" ]; then
+          if [ "$TIENE_TOKEN" != "true" ]; then
             echo "listo=false" >> "$GITHUB_OUTPUT"
             echo "::notice::RAILWAY_TOKEN no esta configurado. Se omite el despliegue: se asume que Railway redespliega por su cuenta."
           else
             echo "listo=true" >> "$GITHUB_OUTPUT"
           fi
 
+      # Version fijada a proposito: `npm install` sin version instalaria lo que
+      # sea la ultima publicacion en ese momento, y los scripts de postinstall
+      # se ejecutan con permisos del job. Subir la version debe ser una
+      # decision consciente, no algo que cambie solo entre dos despliegues.
       - name: Instalar Railway CLI
         if: steps.config.outputs.listo == 'true'
-        run: npm install -g @railway/cli
+        run: npm install -g @railway/cli@5.43.1
 
+      # El token vive unicamente en este paso, no en todo el job: el paso que
+      # instala dependencias de terceros nunca lo tiene a la vista.
       - name: Desplegar
         if: steps.config.outputs.listo == 'true'
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
         run: railway up --service academynotes-demo --detach
