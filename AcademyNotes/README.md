@@ -206,12 +206,29 @@ Variables configuradas en el servicio: `ACADEMYNOTES_SECRET_KEY` (clave de
 sesión estable), `ACADEMYNOTES_HTTPS=1` (cookie `Secure`) y
 `ACADEMYNOTES_DATA_DIR=/data`.
 
-**Los datos se reinician en cada despliegue.** La base viaja horneada en la
-imagen, así que cada versión arranca con una demo limpia y reproducible. Lo que
-un profesor registre durante una sesión de retroalimentación se pierde al
-desplegar de nuevo. Para conservarlo habría que montar un volumen en la ruta de
-`ACADEMYNOTES_DATA_DIR`: `wsgi.py` detecta si ya existe una base y solo siembra
-cuando no la encuentra.
+### Modo dormido y coste
+
+El servicio tiene el **modo dormido activado** (`sleepApplication`): se apaga
+cuando nadie lo usa y despierta con la primera petición, en unos pocos
+segundos. Así consume solo mientras alguien está mirando la demo, y el crédito
+gratuito de Railway ($1/mes) cubre un uso ocasional. Encendido de forma
+permanente costaría unos 5 USD/mes.
+
+Cuando el proyecto tenga presupuesto: plan Hobby y `sleepApplication: false`.
+No hay migración ni cambio de URL de por medio.
+
+### Los datos se reinician
+
+La base viaja horneada en la imagen, así que **cada despliegue —y cada vez que
+el servicio despierta— arranca con una demo limpia y reproducible**. Lo que un
+profesor registre durante una sesión se pierde si la aplicación se duerme entre
+medias.
+
+Es una consecuencia buscada del prototipo, no un fallo: cada demostración parte
+del mismo estado conocido. Si algún día conviene que ese trabajo sobreviva, hay
+que montar un volumen persistente en la ruta de `ACADEMYNOTES_DATA_DIR` —
+`wsgi.py` detecta si ya existe una base y solo siembra cuando no la encuentra—
+y eso ya no entra en ningún plan gratuito.
 
 ### Lo que hace portable este montaje
 

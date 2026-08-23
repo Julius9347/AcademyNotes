@@ -123,8 +123,15 @@ anything; the user has to connect the repo once in the Railway dashboard
 reached the live demo — verify with `list-deployments` before claiming it.
 
 The demo database is baked into the image at build time (`RUN python seed.py`),
-so every deploy resets the data to a clean, reproducible demo. Don't add a
-volume without being asked — the reset is the intended behaviour.
+so the data resets to a clean, reproducible demo on every deploy **and every
+wake-up**. Don't add a volume without being asked — the reset is the intended
+behaviour.
+
+`sleepApplication` is **on**, so the service idles down when unused and wakes in
+a few seconds. That is what keeps it inside Railway's $1/month free credit while
+the project has no budget; always-on would be ~$5/month. When there is budget:
+Hobby plan and `sleepApplication: false`, no migration or URL change needed.
+Don't disable sleeping to "fix" a slow first request — the delay is the point.
 
 ## Publishing changes (standing instruction from the user)
 
