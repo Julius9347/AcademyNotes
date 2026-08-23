@@ -187,14 +187,17 @@ retroalimentación se encuentre con una demostración rota.
 
 Puesta en marcha (una sola vez, requiere tu cuenta de Fly):
 
-```bash
-# 1. Instalar flyctl y entrar
-#    Windows:  iwr https://fly.io/install.ps1 -useb | iex
+Todos los comandos se ejecutan desde la carpeta `AcademyNotes/`, que es donde
+está `fly.toml`. En Windows, abre una terminal **nueva** después de instalar
+flyctl para que quede en el `PATH`.
+
+```powershell
+# 1. Iniciar sesión (abre el navegador)
 flyctl auth login
 
-# 2. Crear la aplicación (desde la carpeta AcademyNotes/)
-cd AcademyNotes
-flyctl launch --no-deploy --copy-config --name academynotes-demo
+# 2. Crear la aplicación. El nombre debe ser único en todo Fly;
+#    si está tomado, elige otro y cámbialo también en fly.toml.
+flyctl apps create academynotes-demo
 
 # 3. Clave de sesión estable (si no, cada reinicio cierra las sesiones)
 flyctl secrets set ACADEMYNOTES_SECRET_KEY=$(python -c "import secrets;print(secrets.token_hex(32))")
@@ -204,8 +207,9 @@ flyctl deploy
 
 # 5. Token para que GitHub Actions pueda desplegar
 flyctl tokens create deploy
-#    Guarda la salida en GitHub: Settings > Secrets and variables > Actions
-#    > New repository secret, con el nombre FLY_API_TOKEN
+#    Copia la salida completa (empieza por FlyV1) en GitHub:
+#    Settings > Secrets and variables > Actions > New repository secret
+#    Nombre: FLY_API_TOKEN
 ```
 
 A partir de ahí, cada `git push` a `main` despliega solo.
