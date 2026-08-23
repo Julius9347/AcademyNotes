@@ -33,9 +33,12 @@ EXPOSE 8080
 
 # Un solo worker: SQLite no admite escrituras concurrentes desde varios
 # procesos. Los hilos bastan de sobra para una demostracion.
-CMD ["gunicorn", "wsgi:app", \
-     "--bind", "0.0.0.0:8080", \
-     "--workers", "1", \
-     "--threads", "8", \
-     "--timeout", "60", \
-     "--access-logfile", "-"]
+#
+# Se escucha en $PORT cuando la plataforma lo define (Railway, Render, Heroku)
+# y en 8080 si no, para que la misma imagen sirva en local y en cualquier host.
+CMD gunicorn wsgi:app \
+    --bind "0.0.0.0:${PORT:-8080}" \
+    --workers 1 \
+    --threads 8 \
+    --timeout 60 \
+    --access-logfile -
