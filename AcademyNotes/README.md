@@ -161,6 +161,10 @@ services/              lógica de negocio y SQL (nunca tocan request/session)
 blueprints/            rutas por rol (auth, teacher, student, family, admin)
 templates/ static/     Jinja2 + CSS y módulos ES sin build step
 tests/                 pruebas de los flujos críticos
+Dockerfile             imagen de despliegue (siembra la demo al construir)
+railway.json           configuración de construcción y salud en Railway
+Procfile               comando de arranque para plataformas que lo leen
+wsgi.py                entrada de producción con gunicorn
 _legacy/               código de la versión anterior, archivado (puede borrarse)
 ```
 
