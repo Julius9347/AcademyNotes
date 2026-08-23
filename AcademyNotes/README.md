@@ -163,9 +163,7 @@ templates/ static/     Jinja2 + CSS y módulos ES sin build step
 tests/                 pruebas de los flujos críticos
 Dockerfile             imagen de despliegue (siembra la demo al construir)
 railway.json           configuración de construcción y salud en Railway
-Procfile               comando de arranque para plataformas que lo leen
 wsgi.py                entrada de producción con gunicorn
-_legacy/               código de la versión anterior, archivado (puede borrarse)
 ```
 
 **Tres capas, estrictas:** ruta → servicio → `core/db`. Las rutas no escriben
@@ -222,8 +220,7 @@ Nada de esto depende de Railway, por si conviene cambiar de plataforma:
 | Archivo | Para qué sirve |
 |---|---|
 | `Dockerfile` | Imagen lista, con la demo sembrada en tiempo de construcción (arranque < 1 s) |
-| `.dockerignore` | Deja fuera `_legacy/`, `instance/` y el historial de git |
-| `Procfile` | Comando de arranque para plataformas que lo leen (Render, Railway, Heroku) |
+| `.dockerignore` | Deja fuera `instance/`, cachés y el historial de git |
 | `wsgi.py` | Entrada de producción con gunicorn, sin modo debug; siembra si no encuentra base |
 | `config.py` | `ACADEMYNOTES_SECRET_KEY`, `ACADEMYNOTES_DATA_DIR` y `ACADEMYNOTES_HTTPS` por entorno |
 | `.github/workflows/ci.yml` | Ejecuta las pruebas en cada cambio de `main` y en cada pull request |

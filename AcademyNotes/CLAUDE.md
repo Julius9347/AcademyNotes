@@ -30,9 +30,10 @@ Demo users: password `demo1234` for everyone. `admin`, `crodriguez` (teacher),
 `jperez` (student, declining performance), `mperez` (guardian). Full table in
 `README.md`.
 
-`_legacy/` holds the previous flat implementation (`main.py`-era). It is
-gitignored, unused and referenced by nothing — do not import from it or "fix"
-it; it exists only as historical reference and can be deleted.
+The pre-v0.1 flat implementation (`main.py`-era) is gone from the working tree.
+It survives only on the `respaldo/2026-08-23-app-plana-v0.0.1` branch and in git
+history — do not restore it, and do not treat it as a reference for how this
+codebase works.
 
 ## Architecture
 
